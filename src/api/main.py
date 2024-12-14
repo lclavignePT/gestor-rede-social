@@ -2,9 +2,11 @@ import os
 from typing import List
 
 from fastapi import Depends, FastAPI, Form, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import JSONResponse
 
 from ..agents.content_generator import ContentGenerator
 from ..database.models import User
@@ -20,6 +22,23 @@ templates = Jinja2Templates(directory="templates")
 if os.path.exists("static"):
     app.mount("/static", StaticFiles(directory="static"), name="static")
 
+
+# Middleware para interceptar erros de autenticação
+class AuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        response = await call_next(request)
+
+        # Se for erro de autenticação e a requisição espera HTML
+        if response.status_code == 401 and "text/html" in request.headers.get(
+            "accept", ""
+        ):
+            return RedirectResponse(url="/login", status_code=302)
+
+        return response
+
+
+app.add_middleware(AuthMiddleware)
+
 # Incluir routers
 app.include_router(users.router)
 
@@ -29,8 +48,16 @@ content_generator = ContentGenerator()
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Página inicial com formulário."""
-    return templates.TemplateResponse("index.html", {"request": request})
+    """Página inicial."""
+    return templates.TemplateResponse("home.html", {"request": request})
+
+
+@app.get("/generator", response_class=HTMLResponse)
+async def generator_page(
+    request: Request, current_user: User = Depends(get_current_active_user)
+):
+    """Página do gerador de posts."""
+    return templates.TemplateResponse("generator.html", {"request": request})
 
 
 @app.get("/login", response_class=HTMLResponse)
@@ -70,4 +97,12 @@ async def generate_post(
             return {"posts": contents, "count": len(contents)}
     except Exception as e:
         print(f"Erro na geração do post: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        error_message = str(e)
+
+        # Verificar se é um erro de violação de política
+        if "content_policy_violation" in error_message:
+            error_detail = "content_policy_violation: O conteúdo solicitado viola as políticas de uso da IA."
+        else:
+            error_detail = error_message
+
+        raise HTTPException(status_code=500, detail=error_detail)

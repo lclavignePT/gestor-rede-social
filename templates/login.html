@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Gerador de Posts</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body class="bg-gray-100">
     <div class="min-h-screen flex items-center justify-center">
@@ -47,6 +49,27 @@
     </div>
 
     <script>
+        // Verificar se veio de um redirecionamento por falta de autenticação
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.referrer && document.referrer.includes('/generator')) {
+                showToast('Por favor, faça login para continuar', 'error');
+            }
+        });
+
+        function showToast(message, type = 'error') {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "bottom",
+                position: "center",
+                style: {
+                    background: type === 'error' ? '#EF4444' : '#10B981',
+                    borderRadius: '8px',
+                    padding: '12px 24px',
+                }
+            }).showToast();
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -65,16 +88,46 @@
                 const data = await response.json();
                 
                 if (response.ok) {
+                    console.log('Login bem sucedido, salvando token...');
                     // Salvar token no localStorage
                     localStorage.setItem('token', data.access_token);
-                    // Redirecionar para a página principal
-                    window.location.href = '/';
+                    
+                    console.log('Token salvo, mostrando mensagem de sucesso...');
+                    showToast('Login realizado com sucesso!', 'success');
+                    
+                    console.log('Redirecionando para /generator em 1 segundo...');
+                    // Fazer requisição GET para /generator com o token
+                    setTimeout(async () => {
+                        console.log('Executando redirecionamento...');
+                        try {
+                            const response = await fetch('/generator', {
+                                headers: {
+                                    'Authorization': `Bearer ${data.access_token}`
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                const html = await response.text();
+                                document.open();
+                                document.write(html);
+                                document.close();
+                                // Atualizar a URL sem recarregar
+                                window.history.pushState({}, '', '/generator');
+                            } else {
+                                showToast('Erro ao acessar o gerador', 'error');
+                            }
+                        } catch (error) {
+                            console.error('Erro no redirecionamento:', error);
+                            showToast('Erro ao acessar o gerador', 'error');
+                        }
+                    }, 1000);
                 } else {
-                    alert('Email ou senha incorretos');
+                    console.log('Erro no login:', data.detail);
+                    showToast(data.detail || 'Email ou senha incorretos', 'error');
                 }
             } catch (error) {
                 console.error('Erro ao fazer login:', error);
-                alert('Erro ao fazer login. Tente novamente.');
+                showToast('Erro ao fazer login. Tente novamente.', 'error');
             }
         });
     </script>

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Posts - MVP</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 </head>
 <body class="bg-gray-100">
     <!-- Navbar -->
@@ -114,13 +116,23 @@
     </template>
 
     <script>
+        function showToast(message, type = 'error') {
+            Toastify({
+                text: message,
+                duration: 3000,
+                gravity: "bottom",
+                position: "center",
+                style: {
+                    background: type === 'error' ? '#EF4444' : '#10B981',
+                    borderRadius: '8px',
+                    padding: '12px 24px',
+                }
+            }).showToast();
+        }
+
         // Verificar autenticação ao carregar a página
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = '/login';
-                return;
-            }
             
             // Decodificar token para mostrar email do usuário
             try {
@@ -128,13 +140,17 @@
                 document.getElementById('userEmail').textContent = payload.sub;
             } catch (error) {
                 console.error('Erro ao decodificar token:', error);
+                showToast('Erro ao verificar sessão');
             }
         });
 
         // Função de logout
         function logout() {
             localStorage.removeItem('token');
-            window.location.href = '/login';
+            showToast('Logout realizado com sucesso!', 'success');
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1500);
         }
 
         document.getElementById('postForm').addEventListener('submit', async (e) => {
@@ -142,8 +158,10 @@
             
             const token = localStorage.getItem('token');
             if (!token) {
-                alert('Sessão expirada. Faça login novamente.');
-                window.location.href = '/login';
+                showToast('Sessão expirada. Faça login novamente.');
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
                 return;
             }
 
@@ -176,15 +194,22 @@
                 });
                 
                 if (response.status === 401) {
-                    alert('Sessão expirada. Faça login novamente.');
-                    window.location.href = '/login';
+                    showToast('Sessão expirada. Faça login novamente.');
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1500);
                     return;
                 }
                 
                 const data = await response.json();
                 
                 if (data.error) {
-                    alert('Erro ao gerar post: ' + data.error);
+                    // Verificar se é um erro de violação de política de conteúdo
+                    if (data.error.includes('content_policy_violation')) {
+                        showToast('O conteúdo solicitado viola as políticas de uso da IA. Por favor, revise seu prompt e tente novamente.', 'error');
+                    } else {
+                        showToast('Erro ao gerar post: ' + data.error);
+                    }
                     return;
                 }
 
@@ -207,10 +232,12 @@
                     
                     resultsDiv.appendChild(clone);
                 });
+
+                showToast('Posts gerados com sucesso!', 'success');
                 
             } catch (error) {
-                alert('Erro ao gerar post. Tente novamente.');
-                console.error(error);
+                console.error('Erro ao gerar post:', error);
+                showToast('Erro ao gerar post. Tente novamente.');
             } finally {
                 // Restaurar botão
                 button.disabled = false;
