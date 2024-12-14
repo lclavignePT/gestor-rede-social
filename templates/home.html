@@ -7,16 +7,78 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <style>
+        body {
+            background-color: rgb(243, 244, 246);
+            min-height: 100vh;
+        }
+
+        .nav-bg {
+            background-color: rgb(243, 244, 246);
+        }
+
+        .content-bg {
+            background-color: rgb(243, 244, 246);
+        }
+
+        .feature-card {
+            background-color: rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .features-section {
+            background-color: rgb(243, 244, 246);
+        }
+
+        @keyframes softPulse {
+            0% { 
+                transform: scale(1);
+            }
+            50% { 
+                transform: scale(1.05);
+            }
+            100% { 
+                transform: scale(1);
+            }
+        }
+
+        .logo-container {
+            position: relative;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-animation {
+            animation: softPulse 3s ease-in-out infinite;
+        }
+
+        .hero-logo {
+            animation: softPulse 4s ease-in-out infinite;
+            animation-delay: 0.5s;
+            opacity: 0.25;
+            position: relative;
+            z-index: 20;
+        }
+
+        .dashboard-image {
+            filter: drop-shadow(0 20px 13px rgb(0 0 0 / 0.1)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08));
+            opacity: 0.95;
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
+<body>
     <!-- Navbar -->
-    <nav class="bg-white shadow-md">
+    <nav class="nav-bg shadow-md relative overflow-hidden">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16">
-                <div class="flex">
-                    <div class="flex-shrink-0 flex items-center">
-                        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Quanthea</h1>
+                <div class="flex items-center">
+                    <div class="logo-container">
+                        <img src="/static/logo-v3.png" alt="Quanthea" class="w-12 h-12 logo-animation">
                     </div>
+                    <h1 class="ml-3 text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Quanthea</h1>
                 </div>
                 <div class="flex items-center space-x-4">
                     <a href="/login" class="text-gray-600 hover:text-gray-900">Login</a>
@@ -29,26 +91,26 @@
     </nav>
 
     <!-- Hero Section -->
-    <div class="relative bg-white overflow-hidden py-16">
-        <div class="max-w-7xl mx-auto">
-            <div class="relative z-10 pb-8 bg-white sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
-                <main class="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
-                    <div class="sm:text-center lg:text-left">
+    <div class="relative overflow-hidden py-16">
+        <div class="max-w-7xl mx-auto relative">
+            <div class="relative z-10 pb-8 content-bg rounded-lg sm:pb-16 md:pb-20 lg:max-w-2xl lg:w-full lg:pb-28 xl:pb-32">
+                <main class="mt-10 mx-auto max-w-7xl sm:mt-12 md:mt-16 lg:mt-20 xl:mt-28">
+                    <div class="px-8 sm:px-12 lg:px-16">
                         <h2 class="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
                             <span class="block">Transforme suas ideias</span>
                             <span class="block text-blue-600">em conexões poderosas</span>
                         </h2>
-                        <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
+                        <p class="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl md:mt-5 md:text-xl">
                             Una a precisão da inteligência artificial com sua visão criativa. Crie conteúdo extraordinário que ressoa, engaja e transforma.
                         </p>
-                        <div class="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                        <div class="mt-5 sm:mt-8 flex flex-col sm:flex-row sm:gap-3">
                             <div class="rounded-md shadow">
                                 <a href="#"
                                     class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 md:py-4 md:text-lg md:px-10">
                                     Começar agora
                                 </a>
                             </div>
-                            <div class="mt-3 sm:mt-0 sm:ml-3">
+                            <div class="mt-3 sm:mt-0">
                                 <a href="/register"
                                     class="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 md:py-4 md:text-lg md:px-10">
                                     Criar Conta
@@ -60,16 +122,20 @@
             </div>
         </div>
         <div class="lg:absolute lg:inset-y-0 lg:right-0 lg:w-1/2 flex items-center justify-center p-8">
-            <img class="w-full h-auto max-w-2xl object-contain rounded-lg shadow-2xl" 
-                 src="/static/img-exIoLwkxJedCerSqPKkrqcrX.png" 
-                 alt="Quanthea Dashboard"
-                 style="filter: drop-shadow(0 20px 13px rgb(0 0 0 / 0.1)) drop-shadow(0 8px 5px rgb(0 0 0 / 0.08));">
+            <div class="relative w-full max-w-2xl">
+                <img class="w-full h-auto object-contain rounded-lg shadow-2xl relative z-10 dashboard-image" 
+                     src="/static/img-exIoLwkxJedCerSqPKkrqcrX.png" 
+                     alt="Quanthea Dashboard">
+                <div class="absolute inset-0 flex items-center justify-center z-30">
+                    <img src="/static/logo-v3.png" alt="" class="w-96 h-96 hero-logo">
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Features Section -->
-    <div class="py-12 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="py-12 relative overflow-hidden features-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
             <div class="lg:text-center">
                 <h2 class="text-base text-blue-600 font-semibold tracking-wide uppercase">Recursos Únicos</h2>
                 <p class="mt-2 text-3xl leading-8 font-extrabold tracking-tight text-gray-900 sm:text-4xl">
@@ -79,10 +145,10 @@
 
             <div class="mt-10">
                 <div class="space-y-10 md:space-y-0 md:grid md:grid-cols-2 md:gap-x-8 md:gap-y-10">
-                    <!-- Feature 1 -->
-                    <div class="relative">
+                    <!-- Feature cards com elementos do logo -->
+                    <div class="relative p-6 feature-card rounded-lg shadow-lg overflow-hidden">
+                        <div class="quantum-pattern opacity-5"></div>
                         <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
-                            <!-- Heroicon name: outline/lightning-bolt -->
                             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
@@ -93,10 +159,9 @@
                         </p>
                     </div>
 
-                    <!-- Feature 2 -->
-                    <div class="relative">
+                    <div class="relative p-6 feature-card rounded-lg shadow-lg overflow-hidden">
+                        <div class="quantum-pattern opacity-5"></div>
                         <div class="absolute flex items-center justify-center h-12 w-12 rounded-md bg-blue-500 text-white">
-                            <!-- Heroicon name: outline/scale -->
                             <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
                             </svg>
