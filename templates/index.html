@@ -7,9 +7,27 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100">
+    <!-- Navbar -->
+    <nav class="bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <h1 class="text-xl font-bold">Gerador de Posts</h1>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <span id="userEmail" class="mr-4 text-gray-600"></span>
+                    <button id="logoutBtn" onclick="logout()"
+                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
     <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 class="text-3xl font-bold mb-8 text-center">Gerador de Posts com IA</h1>
-        
         <!-- Formulário -->
         <div class="bg-white p-6 rounded-lg shadow-md mb-8">
             <form id="postForm" class="space-y-4">
@@ -96,9 +114,39 @@
     </template>
 
     <script>
+        // Verificar autenticação ao carregar a página
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Decodificar token para mostrar email do usuário
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                document.getElementById('userEmail').textContent = payload.sub;
+            } catch (error) {
+                console.error('Erro ao decodificar token:', error);
+            }
+        });
+
+        // Função de logout
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
         document.getElementById('postForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Sessão expirada. Faça login novamente.');
+                window.location.href = '/login';
+                return;
+            }
+
             // Mostrar loading
             const button = e.target.querySelector('button');
             button.disabled = true;
@@ -121,8 +169,17 @@
                 // Fazer requisição
                 const response = await fetch('/generate', {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: formData
                 });
+                
+                if (response.status === 401) {
+                    alert('Sessão expirada. Faça login novamente.');
+                    window.location.href = '/login';
+                    return;
+                }
                 
                 const data = await response.json();
                 
