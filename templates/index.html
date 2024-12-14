@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Posts - MVP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <h1 class="text-3xl font-bold mb-8 text-center">Gerador de Posts com IA</h1>
+        
+        <!-- Formulário -->
+        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+            <form id="postForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tema/Assunto do Post</label>
+                    <input type="text" name="topic" required
+                        class="w-full p-2 border rounded"
+                        placeholder="Ex: Dicas de produtividade">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tom de Voz</label>
+                    <select name="tone" required class="w-full p-2 border rounded">
+                        <option value="formal">Formal</option>
+                        <option value="informal">Informal</option>
+                        <option value="descontraído">Descontraído</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Tipo de Conteúdo</label>
+                    <select name="content_type" required class="w-full p-2 border rounded">
+                        <option value="educativo">Educativo</option>
+                        <option value="promocional">Promocional</option>
+                        <option value="engajamento">Engajamento</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium mb-1">Personas</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="personas" value="adultos" checked
+                                class="mr-2">
+                            Adultos (acima de 18 anos)
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="personas" value="adolescentes"
+                                class="mr-2">
+                            Adolescentes (13 a 18 anos)
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="personas" value="criancas"
+                                class="mr-2">
+                            Crianças (até 12 anos)
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit"
+                    class="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition">
+                    Gerar Posts
+                </button>
+            </form>
+        </div>
+        
+        <!-- Resultados -->
+        <div id="results" class="space-y-8"></div>
+    </div>
+
+    <!-- Template para resultado -->
+    <template id="resultTemplate">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <div class="mb-4">
+                <h2 class="text-xl font-semibold mb-2">Post para <span class="persona-name"></span></h2>
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="font-medium mb-2">Texto:</h3>
+                        <p class="post-text text-gray-700"></p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-medium mb-2">Hashtags:</h3>
+                        <p class="hashtags text-blue-500"></p>
+                    </div>
+                    
+                    <div>
+                        <h3 class="font-medium mb-2">Imagem:</h3>
+                        <img class="post-image w-full rounded-lg">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Mostrar loading
+            const button = e.target.querySelector('button');
+            button.disabled = true;
+            button.textContent = 'Gerando...';
+            
+            // Limpar resultados anteriores
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            try {
+                // Coletar dados do formulário
+                const formData = new FormData(e.target);
+                
+                // Garantir que pelo menos uma persona está selecionada
+                const selectedPersonas = formData.getAll('personas');
+                if (selectedPersonas.length === 0) {
+                    formData.append('personas', 'adultos');
+                }
+                
+                // Fazer requisição
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert('Erro ao gerar post: ' + data.error);
+                    return;
+                }
+
+                // Processar resultados
+                const posts = data.posts || [data];  // Compatibilidade com modo single
+                const template = document.getElementById('resultTemplate');
+
+                posts.forEach(post => {
+                    const clone = template.content.cloneNode(true);
+                    
+                    // Preencher dados
+                    clone.querySelector('.persona-name').textContent = 
+                        post.persona || 'Adultos';
+                    clone.querySelector('.post-text').textContent = 
+                        post.post_text;
+                    clone.querySelector('.hashtags').textContent = 
+                        post.hashtags;
+                    clone.querySelector('.post-image').src = 
+                        post.image_url;
+                    
+                    resultsDiv.appendChild(clone);
+                });
+                
+            } catch (error) {
+                alert('Erro ao gerar post. Tente novamente.');
+                console.error(error);
+            } finally {
+                // Restaurar botão
+                button.disabled = false;
+                button.textContent = 'Gerar Posts';
+            }
+        });
+    </script>
+</body>
+</html> 
