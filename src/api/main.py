@@ -1,3 +1,4 @@
+import os
 from typing import List
 
 from fastapi import FastAPI, Form, HTTPException, Request
@@ -11,7 +12,10 @@ app = FastAPI(title="Gerador de Posts - MVP")
 
 # Configurar templates e arquivos estáticos
 templates = Jinja2Templates(directory="templates")
-app.mount("/static", StaticFiles(directory="static"), name="static")
+
+# Montar diretório static apenas se ele existir
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Instanciar gerador de conteúdo
 content_generator = ContentGenerator()
