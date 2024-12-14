@@ -11,9 +11,11 @@ load_dotenv(override=True)
 class ContentGenerator:
     def __init__(self):
         api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key or api_key == "sua_chave_aqui":
+        if not api_key:
             raise ValueError("API key não configurada corretamente no arquivo .env")
-        self.client = OpenAI(api_key=api_key)
+
+        # Inicialização simplificada do cliente
+        self.client = OpenAI()
 
         # Definições de personas
         self.personas = {
